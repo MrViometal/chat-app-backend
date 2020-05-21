@@ -10,6 +10,14 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
+io.on('connection', (socket) => {
+  console.log('we have a new connection');
+
+  socket.on('disconnection', () => {
+    console.log('user had left');
+  });
+});
+
 app.use(router);
 
 const basicCallback = () => console.log(`server has started on port ${PORT}`);
