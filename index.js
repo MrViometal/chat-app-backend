@@ -62,7 +62,14 @@ io.on('connection', (socket) => {
 
   //* watching socket on disconnection
   socket.on('disconnect', () => {
-    console.log('user had left!!!');
+    //remove user when disconnecting i.e. refreshing
+    const user = removeUser(socket.id);
+    if (user) {
+      io.to(user.room).emit('message', {
+        user: 'admin',
+        text: `${user.name} had left`,
+      });
+    }
   });
 });
 
