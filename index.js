@@ -48,6 +48,12 @@ io.on('connection', (socket) => {
     //if no error, user joins room
     socket.join(user.room);
 
+    // to get room Data
+    io.to(user.room).emit('roomData', {
+      room: user.room,
+      users: getUserInRoom(user.room),
+    });
+
     callback();
   });
 
@@ -56,6 +62,10 @@ io.on('connection', (socket) => {
   socket.on('sendMessage', (message, callback) => {
     const user = getUser(socket.id);
     io.to(user.room).emit('message', { user: user.name, text: message });
+    io.to(user.room).emit('roomData', {
+      room: user.room,
+      text: getUserInRoom(user.room),
+    });
 
     callback();
   });
