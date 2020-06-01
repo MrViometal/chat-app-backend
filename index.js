@@ -39,13 +39,13 @@ io.on('connection', (socket) => {
 
     //to let the user know they joined a room
     //admin generated messages = 'message'
-    socket.emit('message', {
+    socket.emit('newMessage', {
       user: 'admin',
       text: `${user.name} welcome to the room ${user.room}`,
     });
 
     //to broadcast to everyone else that a new user has joined
-    socket.broadcast.to(user.room).emit('message', {
+    socket.broadcast.to(user.room).emit('newMessage', {
       user: 'admin',
       text: `${user.name} has joined`,
     });
@@ -80,7 +80,7 @@ io.on('connection', (socket) => {
     //remove user when disconnecting i.e. refreshing
     const user = removeUser(socket.id);
     if (user) {
-      io.to(user.room).emit('message', {
+      io.to(user.room).emit('newMessage', {
         user: 'admin',
         text: `${user.name} had left`,
       });
