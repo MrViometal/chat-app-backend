@@ -39,13 +39,13 @@ io.on('connection', (socket) => {
 
     //to let the user know they joined a room
     //admin generated messages = 'message'
-    socket.emit('newMessage', {
+    socket.emit('message', {
       user: 'admin',
       text: `${user.name} welcome to the room ${user.room}`,
     });
 
     //to broadcast to everyone else that a new user has joined
-    socket.broadcast.to(user.room).emit('newMessage', {
+    socket.broadcast.to(user.room).emit('message', {
       user: 'admin',
       text: `${user.name} has joined`,
     });
@@ -66,7 +66,7 @@ io.on('connection', (socket) => {
   //user generates messages = 'sendMessages'
   socket.on('sendMessage', (message, callback) => {
     const user = getUser(socket.id);
-    io.to(user.room).emit('newMessage', { user: user.name, text: message });
+    io.to(user.room).emit('message', { user: user.name, text: message });
     io.to(user.room).emit('roomData', {
       room: user.room,
       text: getUserInRoom(user.room),
@@ -80,13 +80,14 @@ io.on('connection', (socket) => {
     //remove user when disconnecting i.e. refreshing
     const user = removeUser(socket.id);
     if (user) {
-      io.to(user.room).emit('newMessage', {
+      io.to(user.room).emit('message', {
         user: 'admin',
         text: `${user.name} had left`,
       });
     }
   });
 });
+newMessage;
 
 const basicCallback = () => console.log(`server has started on port ${PORT}`);
 
