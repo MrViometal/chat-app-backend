@@ -1,15 +1,11 @@
 //Import statements with require because FML
+const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
-const http = require('http');
-
 const cors = require('cors');
 
 //functions
 const { addUser, removeUser, getUser, getUserInRoom } = require('./users');
-
-//Port on localhost
-const PORT = process.env.PORT || 5000;
 
 //from router.js
 const router = require('./router');
@@ -19,23 +15,22 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 
-app.use(router);
 app.use(cors());
+app.use(router);
 
 //* watching socket on connection
-io.on('connection', (socket) => {
+io.on('connect', (socket) => {
   //
   // When a socket has Join
   socket.on('join', ({ name, room }, callback) => {
     //
     // destructuring error and user from add user function
-    const { error, user } = addUser({
-      id: socket.id,
-      name,
-      room,
-    });
+    const { error, user } = addUser({ id: socket.id, name, room });
 
     if (error) return callback(error);
+
+    //if no error, user joins room
+    socket.join(user.room);
 
     //to let the user know they joined a room
     //admin generated messages = 'message'
@@ -45,13 +40,9 @@ io.on('connection', (socket) => {
     });
 
     //to broadcast to everyone else that a new user has joined
-    socket.broadcast.to(user.room).emit('message', {
-      user: 'admin',
-      text: `${user.name} has joined`,
-    });
-
-    //if no error, user joins room
-    socket.join(user.room);
+    socket.broadcast
+      .to(user.room)
+      .emit('message', { user: 'admin', text: `${user.name} has joined` });
 
     // to get room Data
     io.to(user.room).emit('roomData', {
@@ -66,11 +57,8 @@ io.on('connection', (socket) => {
   //user generates messages = 'sendMessages'
   socket.on('sendMessage', (message, callback) => {
     const user = getUser(socket.id);
+
     io.to(user.room).emit('message', { user: user.name, text: message });
-    io.to(user.room).emit('roomData', {
-      room: user.room,
-      text: getUserInRoom(user.room),
-    });
 
     callback();
   });
@@ -79,15 +67,23 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     //remove user when disconnecting i.e. refreshing
     const user = removeUser(socket.id);
+
     if (user) {
       io.to(user.room).emit('message', {
-        user: 'admin',
+        user: 'Admin',
         text: `${user.name} had left`,
+      });
+
+      io.to(user.room).emit('roomData', {
+        room: user.room,
+        text: getUserInRoom(user.room),
       });
     }
   });
 });
-newMessage;
+
+//Port on localhost
+const PORT = process.env.PORT || 5000;
 
 const basicCallback = () => console.log(`server has started on port ${PORT}`);
 
