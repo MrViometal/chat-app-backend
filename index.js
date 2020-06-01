@@ -3,6 +3,8 @@ const express = require('express');
 const socketIO = require('socket.io');
 const http = require('http');
 
+const cors = require('cors');
+
 //functions
 const { addUser, removeUser, getUser, getUserInRoom } = require('./users');
 
@@ -16,6 +18,9 @@ const router = require('./router');
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
+
+app.use(router);
+app.use(cors());
 
 //* watching socket on connection
 io.on('connection', (socket) => {
@@ -82,8 +87,6 @@ io.on('connection', (socket) => {
     }
   });
 });
-
-app.use(router);
 
 const basicCallback = () => console.log(`server has started on port ${PORT}`);
 
