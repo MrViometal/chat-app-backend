@@ -39,7 +39,7 @@ io.on('connection', (socket) => {
 
     //to let the user know they joined a room
     //admin generated messages = 'message'
-    socket.emit('newMessage', {
+    socket.emit('message', {
       user: 'admin',
       text: `${user.name} welcome to the room ${user.room}`,
     });
